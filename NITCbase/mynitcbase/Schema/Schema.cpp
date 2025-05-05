@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <cstring>
+#include<cstdio>
 
 int Schema::openRel(char relName[ATTR_SIZE])
 {
@@ -85,12 +86,15 @@ int Schema::deleteRel(char *relName)
 
 	// get the rel-id using appropriate method of OpenRelTable class by
 	// passing relation name as argument
+//	printf("in schema\n");
 	int ret=OpenRelTable::getRelId(relName);
+//	printf("got relid\n");
 	if (ret>=0 && ret<MAX_OPEN)
 		return E_RELOPEN;
 
 	// Call BlockAccess::deleteRelation() with appropriate argument.
 	ret=BlockAccess::deleteRelation(relName);
+//	printf("block acces deleted\n");
 	return ret;
 
 }

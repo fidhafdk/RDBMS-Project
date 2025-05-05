@@ -86,7 +86,7 @@ void AttrCacheTable::attrCatEntryToRecord(AttrCatEntry *attrCatEntry, Attribute 
 
 }
 
-int AttrCacheTable:: resetSearchIndex(int relId, char attrName[ATTR_SIZE])
+int AttrCacheTable::resetSearchIndex(int relId, char attrName[ATTR_SIZE])
 {
 	IndexId index;
 	index.block = -1;

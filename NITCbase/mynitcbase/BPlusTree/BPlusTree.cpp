@@ -248,7 +248,7 @@ RecId BPlusTree::bPlusSearch(int relId, char attrName[ATTR_SIZE], Attribute attr
 }
 
 
-int BPlusTree::bPlusCreate(int relId, char attrName[ATTR_SIZE])
+int BPlusTree::bPlusCreate( int relId, char attrName[ATTR_SIZE] )
 {
 
 	// if relId is either RELCAT_RELID or ATTRCAT_RELID:
