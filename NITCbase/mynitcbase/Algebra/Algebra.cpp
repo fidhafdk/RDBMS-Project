@@ -14,15 +14,14 @@ the arguments of the function are
 */
 
 int Algebra::select(char srcRel[ATTR_SIZE], char targetRel[ATTR_SIZE], char attr[ATTR_SIZE], int op, char strVal[ATTR_SIZE])
-{
-
+{	
 	int srcRelId = OpenRelTable::getRelId(srcRel);      // we'll implement this later
 	if (srcRelId == E_RELNOTOPEN)
 	{
 		return E_RELNOTOPEN;
 	}
 
-	AttrCatEntry attrCatEntry;
+	AttrCatEntry  attrCatEntry;
 	// get the attribute catalog entry for attr, using AttrCacheTable::getAttrcatEntry()
 	//    return E_ATTRNOTEXIST if it returns the error
 	if ( AttrCacheTable::getAttrCatEntry(srcRelId, attr, &attrCatEntry)==E_ATTRNOTEXIST )

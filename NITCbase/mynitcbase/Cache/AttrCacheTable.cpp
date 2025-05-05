@@ -94,6 +94,14 @@ int AttrCacheTable:: resetSearchIndex(int relId, char attrName[ATTR_SIZE])
 	return AttrCacheTable::setSearchIndex(relId,attrName, &index);
 }
 
+int AttrCacheTable::resetSearchIndex(int relId, int attrOffset)
+{
+	IndexId index;
+	index.block = -1;
+	index.index = -1;
+	return AttrCacheTable::setSearchIndex(relId, attrOffset, &index);
+}
+
 int  AttrCacheTable:: setSearchIndex(int relId, char attrName[ATTR_SIZE], IndexId *searchIndex)
 {
 	if(relId<0 || relId>=MAX_OPEN)
@@ -115,8 +123,83 @@ int  AttrCacheTable:: setSearchIndex(int relId, char attrName[ATTR_SIZE], IndexI
 	return E_ATTRNOTEXIST;
 }
 
+int  AttrCacheTable:: setSearchIndex(int relId, int attrOffset, IndexId *searchIndex)
+{
+	if(relId<0 || relId>=MAX_OPEN)
+		return E_OUTOFBOUND;
+  
+	if(AttrCacheTable::attrCache[relId]==nullptr)
+		return E_RELNOTOPEN;
+
+	AttrCacheEntry *curr=AttrCacheTable::attrCache[relId];
+	while(curr)
+	{
+		if(attrOffset==curr->attrCatEntry.offset)
+		{
+			curr->searchIndex=*searchIndex;
+			return SUCCESS;
+		}
+		curr=curr->next;
+	}
+	return E_ATTRNOTEXIST;
+}
+
+int AttrCacheTable::getSearchIndex(int relId, char attrName[ATTR_SIZE], IndexId *searchIndex)
+{
+
+	if(relId<0 ||relId>=MAX_OPEN)
+	{
+		return E_OUTOFBOUND;
+	}
+
+	if(AttrCacheTable::attrCache[relId] == nullptr)
+	{
+		return E_RELNOTOPEN;
+	}
+
+	
+	for(AttrCacheEntry* temp=AttrCacheTable::attrCache[relId];temp!=nullptr;temp=temp->next)
+	{
+		if (strcmp(attrName,temp->attrCatEntry.attrName)==0)
+		{
+			//copy the searchIndex field of the corresponding Attribute Cache entry
+			//in the Attribute Cache Table to input searchIndex variable.
+			*searchIndex=temp->searchIndex;
+			return SUCCESS;
+		}
+	}
+
+	return E_ATTRNOTEXIST;
+}
 	
 
+int AttrCacheTable::getSearchIndex(int relId, int attrOffset, IndexId *searchIndex)
+{
+
+	if(relId<0 ||relId>=MAX_OPEN)
+	{
+		return E_OUTOFBOUND;
+	}
+
+	if(AttrCacheTable::attrCache[relId] == nullptr)
+	{
+		return E_RELNOTOPEN;
+	}
+
+	
+	for(AttrCacheEntry* temp=attrCache[relId];temp!=nullptr;temp=temp->next)
+	{
+		if (attrOffset==temp->attrCatEntry.offset)
+		{
+			//copy the searchIndex field of the corresponding Attribute Cache entry
+			//in the Attribute Cache Table to input searchIndex variable.
+			*searchIndex=temp->searchIndex;
+			return SUCCESS;
+		}
+	}
+
+	return E_ATTRNOTEXIST;
+}	
 
 
 

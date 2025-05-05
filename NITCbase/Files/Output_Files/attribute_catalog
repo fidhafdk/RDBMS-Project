@@ -40,7 +40,7 @@ ToysForSale,stock,0,-1,-1,3
 ToysToReorder,id,0,-1,-1,0
 ToysToReorder,name,1,-1,-1,1
 ToysToReorder,colour,1,-1,-1,2
--97937997,22017,6,153,13,6,20,11111111111100010000
+1,22017,6,153,15,6,20,11111111111111010000
 ToysToReorder,stock,0,-1,-1,3
 ToysCopy,id,0,-1,-1,0
 ToysCopy,name,1,-1,-1,1
@@ -53,9 +53,9 @@ QuizMarks,quizMarks,0,-1,-1,3
 BlueToys,id,0,-1,-1,0
 BlueToys,name,1,-1,-1,1
 QuizMarks,location,1,-1,-1,4
-NULL,NULL,1,-1,-1,4
-NULL,NULL,1,-1,-1,4
-NULL,NULL,1,-1,-1,4
+Numbers,key,0,-1,6863,0
+BigNumbers,key,0,-1,-1,0
+NULL,NULL,0,-1,-1,0
 Kerala,rollNo,1,-1,-1,0
 NULL,NULL,1,-1,-1,0
 NULL,NULL,1,-1,-1,0

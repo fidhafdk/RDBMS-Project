@@ -1,6 +1,7 @@
 #include "BlockAccess.h"
 #include <cstring>
 #include<cstdlib>
+#include<cstdio>
 
 
 RecId BlockAccess::linearSearch(int relId, char attrName[ATTR_SIZE], union Attribute attrVal, int op)
@@ -444,13 +445,35 @@ int BlockAccess::search(int relId, Attribute *record, char attrName[ATTR_SIZE], 
 	// Declare a variable called recid to store the searched record
 	RecId recId;
 
-	recId=BlockAccess::linearSearch(relId, attrName, attrVal, op);
+	/* get the attribute catalog entry from the attribute cache corresponding
+	to the relation with Id=relid and with attribute_name=attrName  */
+	AttrCatEntry attrCatBuf;
+	int ret=AttrCacheTable::getAttrCatEntry(relId, attrName, &attrCatBuf);
+	if(ret!=SUCCESS)
+		return ret;
+
+	// get rootBlock from the attribute catalog entry
+	if(attrCatBuf.rootBlock==-1)
+	{
+		
+		recId=BlockAccess::linearSearch(relId, attrName, attrVal, op);
+	}
+
+	else
+	{	
+		recId=BPlusTree::bPlusSearch(relId, attrName,  attrVal, op);
+	}
+
+
+	// if there's no record satisfying the given condition (recId = {-1, -1})
+	//     return E_NOTFOUND;
 	if(recId.block==-1 || recId.slot==-1)
 		return E_NOTFOUND;
 
 	RecBuffer recbuffer(recId.block);
-	int ret=recbuffer.getRecord(record, recId.slot);
-
+	recbuffer.getRecord(record, recId.slot);
+//	if (record->nVal==0)
+//		printf("%d %d\n",recId.block,recId.slot);
 	return SUCCESS;
 }
 
