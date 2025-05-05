@@ -332,6 +332,26 @@ int OpenRelTable::closeRel(int relId)
 		return E_RELNOTOPEN;
 	}
 
+	
+	AttrCacheEntry* current = AttrCacheTable::attrCache[relId];
+	while (current != nullptr)
+	{
+		if(current->dirty)
+		{
+			//AttrCatEntry attrCatBuf;
+			//AttrCacheTable::getAttrCatEntry(relId, current->attrCatEntry.attrName, &attrCatBuf);
+			Attribute record[ATTRCAT_NO_ATTRS];
+			AttrCacheTable::attrCatEntryToRecord(&current->attrCatEntry, record);
+			
+			RecBuffer buff(current->recId.block);
+			buff.setRecord(record,current->recId.slot);
+			
+		}
+		AttrCacheEntry* temp = current;
+		current = current->next;
+		free(temp);
+	}
+	
 	if (RelCacheTable::relCache[relId]->dirty==true)
 	{
 		Attribute record[RELCAT_NO_ATTRS];
@@ -344,18 +364,12 @@ int OpenRelTable::closeRel(int relId)
 	
 	free(RelCacheTable::relCache[relId]);
 	
-	AttrCacheEntry* current = AttrCacheTable::attrCache[relId];
-	while (current != nullptr)
-	{
-		AttrCacheEntry* temp = current;
-		current = current->next;
-		free(temp);
-	}
 	
 	tableMetaInfo[relId].free = true;
 	tableMetaInfo[relId].relName[0]='\0';
 	RelCacheTable::relCache[relId] = nullptr;
 	AttrCacheTable::attrCache[relId] = nullptr;
+	
 
 	return SUCCESS;
 }

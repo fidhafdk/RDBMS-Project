@@ -12,34 +12,29 @@ int Frontend::drop_table(char relname[ATTR_SIZE]) {
 }
 
 int Frontend::open_table(char relname[ATTR_SIZE]) {
-  // Schema::openRel
+ 
   return Schema::openRel(relname);
 }
 
 int Frontend::close_table(char relname[ATTR_SIZE]) {
-  // Schema::closeRel
   return Schema::closeRel(relname);
 }
 
 int Frontend::alter_table_rename(char relname_from[ATTR_SIZE], char relname_to[ATTR_SIZE]) {
-  // Schema::renameRel
   return Schema::renameRel(relname_from, relname_to);
 }
 
 int Frontend::alter_table_rename_column(char relname[ATTR_SIZE], char attrname_from[ATTR_SIZE],
                                         char attrname_to[ATTR_SIZE]) {
-  // Schema::renameAttr
   return Schema::renameAttr(relname, attrname_from, attrname_to);
 }
 
 int Frontend::create_index(char relname[ATTR_SIZE], char attrname[ATTR_SIZE]) {
-  // Schema::createIndex
-  return SUCCESS;
+	return Schema::createIndex(relname, attrname);
 }
 
 int Frontend::drop_index(char relname[ATTR_SIZE], char attrname[ATTR_SIZE]) {
-  // Schema::dropIndex
-  return SUCCESS;
+	return Schema::dropIndex(relname, attrname);
 }
 
 int Frontend::insert_into_table_values(char relname[ATTR_SIZE], int attr_count, char attr_values[][ATTR_SIZE]) {

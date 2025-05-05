@@ -171,4 +171,55 @@ int Schema::createRel(char relName[],int nAttrs, char attrs[][ATTR_SIZE],int att
 	return SUCCESS;
 }
 
+int Schema::createIndex(char relName[ATTR_SIZE],char attrName[ATTR_SIZE])
+{
+        if(strcmp(relName, RELCAT_RELNAME)==0 || strcmp(relName,ATTRCAT_RELNAME)==0)
+        	return E_NOTPERMITTED;
+
+	// get the relation's rel-id using OpenRelTable::getRelId() method
+	int relId=OpenRelTable::getRelId(relName);
+
+	if(relId==E_RELNOTOPEN)
+		return E_RELNOTOPEN;
+		
+	return BPlusTree::bPlusCreate(relId, attrName);
+}
+
+int Schema::dropIndex(char *relName, char *attrName)
+{
+	if(strcmp(relName, RELCAT_RELNAME)==0 || strcmp(relName,ATTRCAT_RELNAME)==0)
+        	return E_NOTPERMITTED;
+       
+
+	// get the rel-id using OpenRelTable::getRelId()
+
+	// if relation is not open in open relation table, return E_RELNOTOPEN
+	int relId=OpenRelTable::getRelId(relName);
+	if(relId==E_RELNOTOPEN)
+		return E_RELNOTOPEN;
+
+	// get the attribute catalog entry corresponding to the attribute
+	// using AttrCacheTable::getAttrCatEntry()
+	AttrCatEntry attrCatBuf;
+	int ret=AttrCacheTable::getAttrCatEntry(relId, attrName, &attrCatBuf);
+	if(ret!=SUCCESS)
+		return E_ATTRNOTEXIST;
+	
+	int rootBlock = attrCatBuf.rootBlock;
+
+	if (rootBlock==-1)
+	{
+		return E_NOINDEX;
+	}
+
+	// destroy the bplus tree rooted at rootBlock using BPlusTree::bPlusDestroy()
+	BPlusTree::bPlusDestroy(rootBlock);
+
+	// set rootBlock = -1 in the attribute cache entry of the attribute using
+	// AttrCacheTable::setAttrCatEntry()
+	attrCatBuf.rootBlock=-1;
+	AttrCacheTable::setAttrCatEntry(relId, attrName, &attrCatBuf);
+
+	return SUCCESS;
+}
 

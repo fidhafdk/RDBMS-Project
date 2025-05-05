@@ -202,9 +202,61 @@ int AttrCacheTable::getSearchIndex(int relId, int attrOffset, IndexId *searchInd
 }	
 
 
+int AttrCacheTable::setAttrCatEntry(int relId, char attrName[ATTR_SIZE], AttrCatEntry *attrCatBuf)
+{
 
+	if(relId<0 || relId>=MAX_OPEN)
+	{
+		return E_OUTOFBOUND;
+	}
 
+	if(AttrCacheTable::attrCache[relId]==nullptr)
+	{
+		return E_RELNOTOPEN;
+	}
 
+	for(AttrCacheEntry *current=AttrCacheTable::attrCache[relId]; current!=nullptr; current=current->next)
+	{
+		if(strcmp(current->attrCatEntry.attrName,attrName)==0)
+		{
+			// copy the attrCatBuf to the corresponding Attribute Catalog entry in
+			// the Attribute Cache Table.
+			current->attrCatEntry=*attrCatBuf;
+			current->dirty=true;
+			return SUCCESS;
+		}
+	}
+
+	return E_ATTRNOTEXIST;
+}
+
+int AttrCacheTable::setAttrCatEntry(int relId, int attrOffset, AttrCatEntry *attrCatBuf)
+{
+
+	if(relId<0 || relId>=MAX_OPEN)
+	{
+		return E_OUTOFBOUND;
+	}
+
+	if(AttrCacheTable::attrCache[relId]==nullptr)
+	{
+		return E_RELNOTOPEN;
+	}
+
+	for(AttrCacheEntry *current=AttrCacheTable::attrCache[relId]; current!=nullptr; current=current->next)
+	{
+		if( current->attrCatEntry.offset==attrOffset)
+		{
+			// copy the attrCatBuf to the corresponding Attribute Catalog entry in
+			// the Attribute Cache Table.
+			current->attrCatEntry=*attrCatBuf;
+			current->dirty=true;
+			return SUCCESS;
+		}
+	}
+
+	return E_ATTRNOTEXIST;
+}
 
 
 
