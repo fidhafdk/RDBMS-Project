@@ -263,8 +263,6 @@ int BlockBuffer::setBlockType(int blockType)
 	// if setDirtyBit() failed
 	// return the returned value from the call
 	return StaticBuffer::setDirtyBit(this->blockNum);
-
-	// return SUCCESS
 }
 
 int BlockBuffer::getFreeBlock(int blockType)

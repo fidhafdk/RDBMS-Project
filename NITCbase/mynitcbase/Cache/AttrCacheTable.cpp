@@ -86,7 +86,36 @@ void AttrCacheTable::attrCatEntryToRecord(AttrCatEntry *attrCatEntry, Attribute 
 
 }
 
+int AttrCacheTable:: resetSearchIndex(int relId, char attrName[ATTR_SIZE])
+{
+	IndexId index;
+	index.block = -1;
+	index.index = -1;
+	return AttrCacheTable::setSearchIndex(relId,attrName, &index);
+}
 
+int  AttrCacheTable:: setSearchIndex(int relId, char attrName[ATTR_SIZE], IndexId *searchIndex)
+{
+	if(relId<0 || relId>=MAX_OPEN)
+		return E_OUTOFBOUND;
+  
+	if(AttrCacheTable::attrCache[relId]==nullptr)
+		return E_RELNOTOPEN;
+
+	AttrCacheEntry *curr=AttrCacheTable::attrCache[relId];
+	while(curr)
+	{
+		if(strcmp(curr->attrCatEntry.attrName,attrName)==0)
+		{
+			curr->searchIndex=*searchIndex;
+			return SUCCESS;
+		}
+		curr=curr->next;
+	}
+	return E_ATTRNOTEXIST;
+}
+
+	
 
 
 

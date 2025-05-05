@@ -596,7 +596,7 @@ int BlockAccess::deleteRelation(char relName[ATTR_SIZE])
 			recbuff.releaseBlock();
 		}
 
-		// (the following part is only relevant once indexing has been implemented)
+// (the following part is only relevant once indexing has been implemented)
 		// if index exists for the attribute (rootBlock != -1), call bplus destroy
 		/*if (rootBlock != -1)
 		{
@@ -624,11 +624,11 @@ int BlockAccess::deleteRelation(char relName[ATTR_SIZE])
 	/*** Updating the Relation Cache Table ***/
 	/** Update relation catalog record entry (number of records in relation
 	catalog is decreased by 1) **/
-	RelCatEntry relCatBuf;
-	RelCacheTable::getRelCatEntry(RELCAT_RELID, &relCatBuf);
 	// Get the entry corresponding to relation catalog from the relation
 	// cache and update the number of records and set it back
 	// (using RelCacheTable::setRelCatEntry() function)
+	RelCatEntry relCatBuf;
+	RelCacheTable::getRelCatEntry(RELCAT_RELID, &relCatBuf);
 	relCatBuf.numRecs=relCatBuf.numRecs-1;
 	RelCacheTable::setRelCatEntry(RELCAT_RELID, &relCatBuf);
 	 
@@ -647,3 +647,105 @@ int BlockAccess::deleteRelation(char relName[ATTR_SIZE])
 	return SUCCESS;
 }
 
+/*
+NOTE: the caller is expected to allocate space for the argument `record` based
+      on the size of the relation. This function will only copy the result of
+      the projection onto the array pointed to by the argument.
+*/
+
+//to fetch one record of the relation in the next serach index without any conditions
+
+int BlockAccess::project(int relId, Attribute *record)
+{
+	// get the previous search index of the relation relId from the relation
+	// cache (use RelCacheTable::getSearchIndex() function)
+	RecId prevRecId;
+	RelCacheTable::getSearchIndex(relId, &prevRecId);
+
+	// declare block and slot which will be used to store the record id of the
+	// slot we need to check.
+	int block, slot;
+
+	/* if the current search index record is invalid(i.e. = {-1, -1})
+	(this only happens when the caller reset the search index)
+	*/
+	if (prevRecId.block == -1 && prevRecId.slot == -1)
+	{
+		// (new project operation. start from beginning)
+
+		// get the first record block of the relation from the relation cache
+		// (use RelCacheTable::getRelCatEntry() function of Cache Layer)
+		RelCatEntry relCatBuf;
+		RelCacheTable::getRelCatEntry(relId, &relCatBuf);
+		block=relCatBuf.firstBlk;
+		slot=0;
+
+		// block = first record block of the relation
+		// slot = 0
+	}
+	else
+	{
+		// (a project/search operation is already in progress)
+
+		// block = previous search index's block
+		// slot = previous search index's slot + 1
+		block=prevRecId.block;
+		slot=prevRecId.slot+1;
+	}
+
+
+	// The following code finds the next record of the relation
+	/* Start from the record id (block, slot) and iterate over the remaining
+	records of the relation */
+	while (block != -1)
+	{
+		// create a RecBuffer object for block (using appropriate constructor!)
+		RecBuffer recbuffer(block);
+		// get header of the block using RecBuffer::getHeader() function
+		// get slot map of the block using RecBuffer::getSlotMap() function
+		HeadInfo head;
+		recbuffer.getHeader(&head);
+		unsigned char * slotmap=(unsigned char*)malloc(sizeof(unsigned char)*head.numSlots);
+		recbuffer.getSlotMap(slotmap);
+
+		if(slot>=head.numSlots)
+		{
+			// (no more slots in this block)
+			// update block = right block of block
+			// update slot = 0
+			block=head.rblock;
+			slot=0;
+		}
+		else if (slotmap[slot]==SLOT_UNOCCUPIED)
+		{	
+			 // (i.e slot-th entry in slotMap contains SLOT_UNOCCUPIED)
+			// increment slot
+			slot++;
+		}
+		else 
+		{
+			// (the next occupied slot / record has been found)
+			break;
+		}
+	}
+
+	if (block == -1)
+	{
+		// (a record was not found. all records exhausted)
+		return E_NOTFOUND;
+	}
+
+	// declare nextRecId to store the RecId of the record found
+	RecId nextRecId{block, slot};
+	// set the search index to nextRecId using RelCacheTable::setSearchIndex
+	RelCacheTable::setSearchIndex(relId, &nextRecId);
+
+	/* Copy the record with record id (nextRecId) to the record buffer (record)
+	For this Instantiate a RecBuffer class object by passing the recId and
+	call the appropriate method to fetch the record
+	*/
+	RecBuffer recbuff(nextRecId.block);
+	recbuff.getRecord(record, nextRecId.slot);
+
+	return SUCCESS;
+}
